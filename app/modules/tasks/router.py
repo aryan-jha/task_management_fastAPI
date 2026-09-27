@@ -20,7 +20,7 @@ def create_task(
 ):
 
     print(task.model_dump())
-    return service.create_task(task=task, db=db)
+    return service.create_task(task=task, db=db, user=user)
 
 
 @task_routes.get("/all_tasks", status_code=status.HTTP_200_OK)
@@ -29,7 +29,7 @@ def get_all_tasks(
     user: Annotated[UserModel, Depends(is_authenticated)],
 ):
 
-    return service.get_all_task(db=db)
+    return service.get_all_task(db=db, user=user)
 
 
 @task_routes.get("/get_task_by_id/{taskId}")
@@ -39,10 +39,10 @@ def get_task_by_id(
     user: Annotated[UserModel, Depends(is_authenticated)],
 ):
 
-    return service.get_task_by_id(taskId, db)
+    return service.get_task_by_id(taskId, db, user)
 
 
-@task_routes.get("/update_task_by_id/{taskId}")
+@task_routes.put("/update_task_by_id/{taskId}")
 def update_task_by_id(
     taskId: int,
     body: TaskSchema,
@@ -50,7 +50,7 @@ def update_task_by_id(
     user: Annotated[UserModel, Depends(is_authenticated)],
 ):
 
-    return service.update_task_by_id(taskId, body, db)
+    return service.update_task_by_id(taskId, body, db, user)
 
 
 @task_routes.delete("/delete_task/{taskId}")
@@ -60,4 +60,4 @@ def delete_task(
     user: Annotated[UserModel, Depends(is_authenticated)],
 ):
 
-    return service.delete_task(taskId, db)
+    return service.delete_task(taskId, db, user)

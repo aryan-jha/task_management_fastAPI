@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     TOKEN_ALGO: str
     EXPIRY_TIME: int
+    EMAIL_SENDER: str
+    MAIL_PASSWORD: str
 
 
 settings = Settings()

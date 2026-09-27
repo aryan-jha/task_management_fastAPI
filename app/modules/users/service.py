@@ -2,11 +2,12 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import jwt
-from fastapi import HTTPException, Request, status
+from fastapi import BackgroundTasks, HTTPException, Request, status
 from jwt import InvalidTokenError
 from pwdlib import PasswordHash
 from sqlalchemy.orm import Session
 
+from app.common.utils import sendEmail
 from app.core.config import settings
 from app.modules.users.model import UserModel
 from app.modules.users.schema import UserLoginSchema, UserPublicSchema, UserSchema
@@ -23,7 +24,7 @@ def verifyPassword(plainPassword: str, hashedPassword: str) -> bool:
     return password_hash.verify(plainPassword, hashedPassword)
 
 
-def register(data: UserSchema, db: Session):
+async def register(data: UserSchema, db: Session, bg_task: BackgroundTasks) -> Any:
 
     is_username_exists: UserModel | None = (
         db.query(UserModel).filter(data.username == UserModel.username).first()
@@ -52,7 +53,7 @@ def register(data: UserSchema, db: Session):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-
+    bg_task.add_task(sendEmail, [data.email], name=data.name)
     return {
         "status": status.HTTP_201_CREATED,
         "message": "User registered successfully",

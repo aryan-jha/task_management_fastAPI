@@ -1,6 +1,6 @@
-from typing import Annotated
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
@@ -18,9 +18,11 @@ user_routes = APIRouter(prefix="/user")
 @user_routes.post(
     "/register", status_code=status.HTTP_201_CREATED, response_model=UserResponseSchema
 )
-def register(data: UserSchema, db: Annotated[Session, Depends(get_db)]):
+async def register(
+    data: UserSchema, bg_task: BackgroundTasks, db: Annotated[Session, Depends(get_db)]
+) -> Any:
 
-    return service.register(data, db)
+    return await service.register(data, db, bg_task)
 
 
 @user_routes.post(

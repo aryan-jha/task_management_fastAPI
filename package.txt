@@ -21,6 +21,9 @@ source /Users/aryan/Desktop/Aryan/fast/venv/bin/activate
 // create virtual env
 python -m venv venv
 
+// updates the table with the updated changes // basically generates the version not implement it
+alembic revision --autogenerate -m ""
 
-
+// implement the latest changes
+alembic upgrade head
 
