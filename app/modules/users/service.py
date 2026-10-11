@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.common.utils import sendEmail
 from app.core.config import settings
+from app.modules.users import repository
 from app.modules.users.model import UserModel
 from app.modules.users.schema import UserLoginSchema, UserPublicSchema, UserSchema
 
@@ -26,18 +27,10 @@ def verifyPassword(plainPassword: str, hashedPassword: str) -> bool:
 
 async def register(data: UserSchema, db: Session, bg_task: BackgroundTasks) -> Any:
 
-    is_username_exists: UserModel | None = (
-        db.query(UserModel).filter(data.username == UserModel.username).first()
-    )
-
-    if is_username_exists:
+    if repository.get_user_by_username(db, data.username):
         raise HTTPException(400, "Username already exists")
 
-    is_email_exists: UserModel | None = (
-        db.query(UserModel).filter(data.email == UserModel.email).first()
-    )
-
-    if is_email_exists:
+    if repository.get_user_by_email(db, data.email):
         raise HTTPException(400, "User email already exists")
 
     hashed_password = hashPassword(data.password)
@@ -50,9 +43,7 @@ async def register(data: UserSchema, db: Session, bg_task: BackgroundTasks) -> A
         mobile_number=data.mobile_number,
     )
 
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    new_user = repository.create_user(db, new_user)
     bg_task.add_task(sendEmail, [data.email], name=data.name)
     return {
         "status": status.HTTP_201_CREATED,
@@ -63,9 +54,7 @@ async def register(data: UserSchema, db: Session, bg_task: BackgroundTasks) -> A
 
 def login(data: UserLoginSchema, db: Session):
 
-    user: UserModel | None = (
-        db.query(UserModel).filter(data.email == UserModel.email).first()
-    )
+    user: UserModel | None = repository.get_user_by_email(db, data.email)
 
     if not user:
         raise HTTPException(
@@ -104,9 +93,7 @@ def is_authenticated(request: Request, db: Session):
             user_token, settings.SECRET_KEY, settings.TOKEN_ALGO
         ).get("id")
 
-        user: UserModel | None = (
-            db.query(UserModel).filter(UserModel.id == decoded_token).first()
-        )
+        user: UserModel | None = repository.get_user_by_id(db, decoded_token)
 
         if not user:
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, "You are unauthorized!")

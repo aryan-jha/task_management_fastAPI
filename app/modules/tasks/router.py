@@ -61,3 +61,12 @@ def delete_task(
 ):
 
     return service.delete_task(taskId, db, user)
+
+
+@task_routes.get("/get_all_completed_tasks")
+def get_all_completed_tasks(
+    db: Annotated[Session, Depends(get_db)],
+    user: Annotated[UserModel, Depends(is_authenticated)],
+):
+
+    return service.get_all_completed_task(db, user)

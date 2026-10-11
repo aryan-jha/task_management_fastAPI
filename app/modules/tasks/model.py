@@ -1,4 +1,5 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.connection import Base
 
@@ -6,8 +7,8 @@ from app.database.connection import Base
 class TaskModel(Base):
     __tablename__ = "user_tasks"
 
-    id: Column[int] = Column(Integer, primary_key=True)
-    title: Column[str] = Column(String)
-    description: Column[str] = Column(String)
-    is_completed: Column[bool] = Column(Boolean, default=False)
-    user_id: Column[int] = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str | None] = mapped_column(String)
+    description: Mapped[str] = mapped_column(String)
+    is_completed: Mapped[bool] = mapped_column(Boolean, default=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))

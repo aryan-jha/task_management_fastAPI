@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.database.connection import get_db
+from app.modules.users import repository
 from app.modules.users.model import UserModel
 
 conf = ConnectionConfig(
@@ -38,9 +39,7 @@ def is_authenticated(request: Request, db: Annotated[Session, Depends(get_db)]):
             user_token, settings.SECRET_KEY, settings.TOKEN_ALGO
         ).get("id")
 
-        user: UserModel | None = (
-            db.query(UserModel).filter(UserModel.id == decoded_token).first()
-        )
+        user: UserModel | None = repository.get_user_by_id(db, decoded_token)
 
         if not user:
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, "You are unauthorized!")
